@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maharatul Istima' — Portal Audio Terproteksi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        emerald: {
+                            850: '#064e3b',
+                            950: '#022c22',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500/30" oncontextmenu="return false;">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+                    <i data-lucide="headphones" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-base sm:text-lg tracking-tight text-white">Maharatul Istima'</h1>
+                        <span class="font-arabic text-emerald-400 text-lg hidden sm:inline">مهارة الاستماع</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Sistem Streaming Audio Terproteksi (Stream-Only)</p>
+                </div>
+            </div>
+
+            <!-- Role Switcher / Lecturer Login Button -->
+            <div class="flex items-center gap-2">
+                <span id="role-badge" class="px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    Mode Mahasiswa
+                </span>
+                <button id="toggle-role-btn" onclick="handleRoleButtonClick()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span id="role-btn-text">Portal Dosen</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+        <!-- LECTURER PANEL (Hidden by default until authenticated) -->
+        <section id="lecturer-panel" class="hidden bg-slate-900 border border-emerald-500/30 rounded-2xl p-5 sm:p-6 shadow-xl shadow-emerald-950/20 transition-all">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-semibold text-white">Panel Unggah & Instruksi Dosen</h2>
+                        <p class="text-xs text-slate-400">Unggah materi audio baru dan atur instruksi tugas untuk mahasiswa</p>
+                    </div>
+                </div>
+                <button onclick="logoutLecturer()" class="text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                    Keluar Dosen
+                </button>
+            </div>
+
+            <form id="upload-form" onsubmit="handleUploadSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Judul Materi Istima' <span class="text-rose-400">*</span></label>
+                        <input type="text" id="input-title" required placeholder="Contoh: Pertemuan 4 - Al-Hiwar fil Matar"
+                            class="w-full bg-slate-950 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Nama Dosen / Pengampu</label>
+                        <input type="text" id="input-lecturer" value="Muh. Nidom Hamami Abicandra, M.Pd" required
+                            class="w-full bg-slate-950 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Pilih File Audio (MP3, WAV, OGG, M4A) <span class="text-rose-400">*</span></label>
+                    <label for="input-audio-file" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-700 hover:border-emerald-500/70 rounded-xl bg-slate-950/60 hover:bg-slate-950 transition-all cursor-pointer p-4 text-center">
+                        <i data-lucide="file-audio" class="w-6 h-6 text-emerald-400 mb-1.5"></i>
+                        <span id="file-label-text" class="text-xs sm:text-sm text-slate-300 font-medium">Klik untuk memilih file rekaman suara dari perangkat Anda</span>
+                        <span class="text-[11px] text-slate-500 mt-0.5">File akan dikompresi & disinkronkan ke cloud stream (Maks. 750 KB)</span>
+                        <input id="input-audio-file" type="file" accept="audio/*" class="hidden" onchange="updateFileName(this)">
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Kolom Instruksi / Tugas Mahasiswa <span class="text-rose-400">*</span></label>
+                    <textarea id="input-instructions" rows="4" required placeholder="Tuliskan perintah menyimak, soal pemahaman (fahmul masmu'), atau batas waktu pengumpulan tugas..."
+                        class="w-full bg-slate-950 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"></textarea>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+                    <button type="button" id="save-draft-btn" onclick="handleSaveOrPublish('draft')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 font-medium text-sm transition-all flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Simpan sebagai Draf</span>
+                    </button>
+                    <button type="submit" id="submit-upload-btn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm shadow-lg shadow-emerald-950/50 transition-all flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>Publikasikan Sekarang</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- AUDIO PLAYER & PLAYLIST GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left / Main Column: Protected Player + Instructions -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Protected Web Audio Player Card -->
+                <div class="bg-gradient-to-b from-slate-900 to-slate-900/95 border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-xl relative overflow-hidden">
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <i data-lucide="radio" class="w-3.5 h-3.5 animate-pulse"></i>
+                            Protected Audio Stream
+                        </span>
+                        <span id="player-lecturer" class="text-xs text-slate-400">Pengampu: Muh. Nidom Hamami Abicandra, M.Pd</span>
+                    </div>
+
+                    <h2 id="player-title" class="text-lg sm:text-xl font-bold text-white mb-1 leading-snug">
+                        Belum Ada Materi Audio
+                    </h2>
+                    <p id="player-subtitle" class="text-xs text-slate-400 mb-5">
+                        Silakan tunggu dosen mengunggah materi audio Maharatul Istima'.
+                    </p>
+
+                    <!-- Live Waveform Canvas -->
+                    <div class="w-full h-24 bg-slate-950/90 border border-slate-800/80 rounded-xl mb-5 overflow-hidden relative flex items-center justify-center">
+                        <canvas id="visualizer-canvas" class="w-full h-full block"></canvas>
+                        <div id="loading-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center gap-2 text-xs text-emerald-400 font-medium">
+                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                            <span>Memproses stream audio terenkripsi...</span>
+                        </div>
+                    </div>
+
+                    <!-- Custom Seek Progress Bar -->
+                    <div class="space-y-1.5 mb-5">
+                        <div id="progress-container" onclick="seekAudio(event)" class="w-full h-2.5 bg-slate-800 rounded-full cursor-pointer overflow-hidden relative group">
+                            <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-0 transition-all duration-100"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono text-slate-400">
+                            <span id="current-time">00:00</span>
+                            <span id="total-duration">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <button onclick="skipSeconds(-5)" title="Mundur 5 detik" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            </button>
+
+                            <button id="play-pause-btn" onclick="togglePlayPause()" class="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-950/60 transition-all cursor-pointer">
+                                <i id="play-icon" data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+                            </button>
+
+                            <button onclick="stopAudio()" title="Hentikan" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer">
+                                <i data-lucide="square" class="w-4 h-4"></i>
+                            </button>
+
+                            <button onclick="skipSeconds(5)" title="Maju 5 detik" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer">
+                                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button id="speed-btn" onclick="cyclePlaybackRate()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-medium text-slate-300 border border-slate-700/70 transition-colors cursor-pointer" title="Kecepatan Putar">
+                                1.0x
+                            </button>
+
+                            <div class="flex items-center gap-2 bg-slate-800/70 px-3 py-1.5 rounded-xl border border-slate-700/50">
+                                <i data-lucide="volume-2" class="w-4 h-4 text-slate-400"></i>
+                                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.9" oninput="changeVolume(this.value)"
+                                    class="w-16 sm:w-20 accent-emerald-500 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KOLOM INSTRUKSI / TUGAS UNTUK MAHASISWA -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-lg">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3.5 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="p-2 rounded-xl bg-sky-500/10 text-sky-400">
+                                <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-semibold text-white">Instruksi & Tugas Mahasiswa</h3>
+                                <p class="text-xs text-slate-400">Perhatikan arahan dosen sebelum dan sesudah menyimak audio</p>
+                            </div>
+                        </div>
+
+                        <button id="edit-instruction-btn" onclick="openEditInstructionModal()" class="hidden px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 border border-emerald-500/30 transition-colors flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            Edit Instruksi
+                        </button>
+                    </div>
+
+                    <div id="instruction-content" class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 sm:p-5 text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+                    </div>
+
+                    <!-- Student Assignment File Upload Section -->
+                    <div class="mt-5 pt-5 border-t border-slate-800/80">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                                    <i data-lucide="file-up" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs sm:text-sm font-semibold text-white">Unggah Jawaban Tugas Mahasiswa</h4>
+                                    <p class="text-[11px] text-slate-400">Kumpulkan hasil jawaban Anda dalam bentuk file (PDF, Word, Gambar/Foto Tulisan, atau Audio)</p>
+                                </div>
+                            </div>
+                            <span id="submission-count-badge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                0 Terkumpul
+                            </span>
+                        </div>
+
+                        <form id="student-upload-form" onsubmit="handleStudentSubmission(event)" class="space-y-3 bg-slate-950/60 border border-slate-800/90 rounded-xl p-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Nama Lengkap Mahasiswa <span class="text-rose-400">*</span></label>
+                                    <input type="text" id="student-name" required placeholder="Masukkan nama lengkap Anda"
+                                        class="w-full bg-slate-900 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-medium text-slate-300 mb-1">NIM <span class="text-rose-400">*</span></label>
+                                    <input type="text" id="student-nim" required placeholder="Contoh: 231101020045"
+                                        class="w-full bg-slate-900 border border-slate-700/80 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none transition-colors">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-300 mb-1">File Jawaban Tugas <span class="text-rose-400">*</span></label>
+                                <label for="student-answer-file" class="flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full border-2 border-dashed border-slate-700 hover:border-emerald-500/70 rounded-xl bg-slate-900/70 hover:bg-slate-900 transition-all cursor-pointer px-4 py-3.5 text-center sm:text-left">
+                                    <i data-lucide="upload-cloud" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                                    <div class="min-w-0">
+                                        <p id="student-file-label" class="text-xs font-medium text-slate-200 truncate">Pilih file jawaban (PDF, DOCX, JPG/PNG, MP3/M4A)</p>
+                                        <p class="text-[10px] text-slate-500">Maksimal ukuran file 750 KB agar tersimpan di cloud</p>
+                                    </div>
+                                    <input id="student-answer-file" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp3,.m4a,.wav" class="hidden" onchange="updateStudentFileName(this)">
+                                </label>
+                            </div>
+
+                            <div class="flex justify-end pt-1">
+                                <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm shadow-md shadow-emerald-950/50 transition-all flex items-center gap-1.5 cursor-pointer">
+                                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                    <span>Kirim Jawaban Tugas</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Submitted Files List for Current Material -->
+                        <div id="student-submissions-wrapper" class="mt-4 hidden">
+                            <h5 class="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+                                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                Riwayat Pengumpulan Tugas Materi Ini
+                            </h5>
+                            <div id="student-submissions-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Course Audio Materials List -->
+            <div class="space-y-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                            <i data-lucide="list-music" class="w-4 h-4 text-emerald-400"></i>
+                            Daftar Materi Istima'
+                        </h3>
+                        <span id="material-count" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">0 Materi</span>
+                    </div>
+
+                    <div id="materials-list" class="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- LECTURER LOGIN MODAL -->
+    <div id="login-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Verifikasi Akses Dosen</h3>
+                </div>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                Fitur unggah audio dan pengaturan tugas hanya diperuntukkan bagi dosen pengampu mata kuliah <strong>Maharatul Istima'</strong>.
+            </p>
+
+            <form onsubmit="verifyLecturerPin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1.5">Masukkan Kode PIN Dosen</label>
+                    <input type="password" id="lecturer-pin-input" required placeholder="Masukkan PIN Dosen"
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-sm text-white tracking-widest focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeLoginModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer">
+                        Masuk sebagai Dosen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT INSTRUCTION MODAL (Lecturer Only) -->
+    <div id="edit-instruction-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="edit-3" class="w-4 h-4 text-emerald-400"></i>
+                    Perbarui Instruksi / Tugas Mahasiswa
+                </h3>
+                <button onclick="closeEditInstructionModal()" class="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <textarea id="edit-instruction-textarea" rows="6"
+                class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl p-3.5 text-sm text-white focus:outline-none mb-4"></textarea>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeEditInstructionModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+                    Batal
+                </button>
+                <button type="button" onclick="saveEditedInstruction()" class="px-4 py-2 rounded-xl text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 0. TEMPELKAN KONFIGURASI FIREBASE ANDA DI SINI
+        // ==========================================
+        const MANUAL_FIREBASE_CONFIG = {
+            apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+            authDomain: "GANTI_DENGAN_PROJECT_ID.firebaseapp.com",
+            projectId: "GANTI_DENGAN_PROJECT_ID",
+            storageBucket: "GANTI_DENGAN_PROJECT_ID.appspot.com",
+            messagingSenderId: "GANTI_DENGAN_SENDER_ID",
+            appId: "GANTI_DENGAN_APP_ID"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'maharatul-istima-github';
+        const firebaseConfig = typeof __firebase_config !== 'undefined'
+            ? JSON.parse(__firebase_config)
+            : (MANUAL_FIREBASE_CONFIG.apiKey !== "GANTI_DENGAN_API_KEY_ANDA" ? MANUAL_FIREBASE_CONFIG : null);
+
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+
+        // ==========================================
+        // 1. STATE & SECURITY INITIALIZATION
+        // ==========================================
+        const LECTURER_PIN = "1828";
+        let isLecturer = false;
+        let currentMaterialId = null;
+        let materials = [];
+        let currentSubmissions = [];
+        let unsubscribeSubmissions = null;
+
+        let audioCtx = null;
+        let audioBuffer = null;
+        let sourceNode = null;
+        let gainNode = null;
+        let analyserNode = null;
+        let isPlaying = false;
+        let startTime = 0;
+        let pauseOffset = 0;
+        let playbackRate = 1.0;
+        let animationFrameId = null;
+
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function fileToDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'u')) {
+                e.preventDefault();
+                showToast("Fitur simpan halaman dinonaktifkan demi keamanan materi.", "warning");
+            }
+            if (e.key === 'F12' || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i')) {
+                e.preventDefault();
+            }
+        });
+
+        // ==========================================
+        // 2. WEB AUDIO API ENGINE (ANTI-IDM STREAM)
+        // ==========================================
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = document.getElementById('volume-slider').value;
+
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 128;
+
+                gainNode.connect(analyserNode);
+                analyserNode.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        async function loadMaterialById(matId) {
+            stopAudio();
+            audioBuffer = null;
+            currentMaterialId = matId;
+
+            const item = materials.find(m => m.id === matId);
+
+            if (!item) {
+                currentMaterialId = null;
+                currentSubmissions = [];
+                if (unsubscribeSubmissions) {
+                    unsubscribeSubmissions();
+                    unsubscribeSubmissions = null;
+                }
+                document.getElementById('player-title').textContent = "Belum Ada Materi Audio";
+                document.getElementById('player-lecturer').textContent = "Pengampu: Muh. Nidom Hamami Abicandra, M.Pd";
+                document.getElementById('player-subtitle').textContent = "Silakan tunggu dosen mengunggah materi audio Maharatul Istima'.";
+                document.getElementById('instruction-content').textContent = "Belum ada instruksi atau tugas yang tersedia saat ini.";
+                document.getElementById('current-time').textContent = "00:00";
+                document.getElementById('total-duration').textContent = "00:00";
+                document.getElementById('progress-bar').style.width = "0%";
+                renderMaterialsList();
+                renderStudentSubmissions();
+                drawIdleVisualizer();
+                return;
+            }
+
+            document.getElementById('player-title').textContent = item.title;
+            document.getElementById('player-lecturer').textContent = `Pengampu: ${item.lecturer}`;
+            document.getElementById('player-subtitle').textContent = "Dengarkan dengan saksama. Fitur unduh dan salin dinonaktifkan.";
+            document.getElementById('instruction-content').textContent = item.instructions;
+            document.getElementById('current-time').textContent = "00:00";
+            document.getElementById('progress-bar').style.width = "0%";
+
+            renderMaterialsList();
+            listenToMaterialSubmissions(item.id);
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.remove('hidden');
+
+            try {
+                initAudioContext();
+                let rawBuffer = item.arrayBuffer;
+                if (!rawBuffer && item.audioBase64) {
+                    rawBuffer = base64ToArrayBuffer(item.audioBase64);
+                    item.arrayBuffer = rawBuffer;
+                }
+
+                if (rawBuffer) {
+                    const bufferCopy = rawBuffer.slice(0);
+                    audioBuffer = await audioCtx.decodeAudioData(bufferCopy);
+                }
+
+                if (audioBuffer) {
+                    document.getElementById('total-duration').textContent = formatTime(audioBuffer.duration);
+                }
+            } catch (err) {
+                console.error("Audio decode error:", err);
+                showToast("Gagal mendekode berkas audio. Pastikan format didukung.", "error");
+            } finally {
+                loadingOverlay.classList.add('hidden');
+                drawIdleVisualizer();
+            }
+        }
+
+        function togglePlayPause() {
+            if (!audioBuffer) return;
+            initAudioContext();
+
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function playAudio() {
+            if (!audioBuffer || isPlaying) return;
+            initAudioContext();
+
+            sourceNode = audioCtx.createBufferSource();
+            sourceNode.buffer = audioBuffer;
+            sourceNode.playbackRate.value = playbackRate;
+            sourceNode.connect(gainNode);
+
+            if (pauseOffset >= audioBuffer.duration) {
+                pauseOffset = 0;
+            }
+
+            startTime = audioCtx.currentTime - (pauseOffset / playbackRate);
+            sourceNode.start(0, pauseOffset);
+            isPlaying = true;
+
+            updatePlayButtonUI(true);
+            startProgressLoop();
+
+            sourceNode.onended = () => {
+                const elapsed = (audioCtx.currentTime - startTime) * playbackRate;
+                if (isPlaying && elapsed >= audioBuffer.duration - 0.1) {
+                    stopAudio();
+                }
+            };
+        }
+
+        function pauseAudio() {
+            if (!isPlaying || !sourceNode) return;
+            try {
+                sourceNode.stop();
+                sourceNode.disconnect();
+            } catch (e) {}
+            pauseOffset = (audioCtx.currentTime - startTime) * playbackRate;
+            isPlaying = false;
+            updatePlayButtonUI(false);
+            cancelAnimationFrame(animationFrameId);
+        }
+
+        function stopAudio() {
+            if (sourceNode) {
+                try {
+                    sourceNode.stop();
+                    sourceNode.disconnect();
+                } catch (e) {}
+            }
+            isPlaying = false;
+            pauseOffset = 0;
+            updatePlayButtonUI(false);
+            cancelAnimationFrame(animationFrameId);
+            document.getElementById('progress-bar').style.width = "0%";
+            document.getElementById('current-time').textContent = "00:00";
+            drawIdleVisualizer();
+        }
+
+        function skipSeconds(delta) {
+            if (!audioBuffer) return;
+            const wasPlaying = isPlaying;
+            let currentPos = isPlaying ? (audioCtx.currentTime - startTime) * playbackRate : pauseOffset;
+            let newPos = Math.max(0, Math.min(audioBuffer.duration - 0.1, currentPos + delta));
+
+            if (wasPlaying) {
+                pauseAudio();
+            }
+            pauseOffset = newPos;
+            updateProgressUI(newPos, audioBuffer.duration);
+
+            if (wasPlaying) {
+                playAudio();
+            }
+        }
+
+        function seekAudio(event) {
+            if (!audioBuffer) return;
+            const container = document.getElementById('progress-container');
+            const rect = container.getBoundingClientRect();
+            const clickX = Math.max(0, Math.min(event.clientX - rect.left, rect.width));
+            const ratio = clickX / rect.width;
+            const newPos = ratio * audioBuffer.duration;
+
+            const wasPlaying = isPlaying;
+            if (wasPlaying) {
+                pauseAudio();
+            }
+            pauseOffset = newPos;
+            updateProgressUI(newPos, audioBuffer.duration);
+
+            if (wasPlaying) {
+                playAudio();
+            }
+        }
+
+        function changeVolume(val) {
+            if (gainNode) {
+                gainNode.gain.value = parseFloat(val);
+            }
+        }
+
+        function cyclePlaybackRate() {
+            const rates = [1.0, 1.25, 0.75];
+            const nextIdx = (rates.indexOf(playbackRate) + 1) % rates.length;
+            const wasPlaying = isPlaying;
+
+            if (wasPlaying) {
+                pauseAudio();
+            }
+            playbackRate = rates[nextIdx];
+            document.getElementById('speed-btn').textContent = playbackRate.toFixed(2).replace('.00', '.0') + 'x';
+
+            if (wasPlaying) {
+                playAudio();
+            }
+        }
+
+        function startProgressLoop() {
+            function step() {
+                if (!isPlaying || !audioBuffer) return;
+                const currentPos = Math.min((audioCtx.currentTime - startTime) * playbackRate, audioBuffer.duration);
+                updateProgressUI(currentPos, audioBuffer.duration);
+                drawLiveVisualizer();
+                animationFrameId = requestAnimationFrame(step);
+            }
+            animationFrameId = requestAnimationFrame(step);
+        }
+
+        function updateProgressUI(current, total) {
+            const pct = total > 0 ? (current / total) * 100 : 0;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('current-time').textContent = formatTime(current);
+        }
+
+        function updatePlayButtonUI(playing) {
+            const btn = document.getElementById('play-pause-btn');
+            if (playing) {
+                btn.innerHTML = `<i data-lucide="pause" class="w-5 h-5 fill-current"></i>`;
+            } else {
+                btn.innerHTML = `<i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function formatTime(secs) {
+            if (!secs || isNaN(secs)) return "00:00";
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        // ==========================================
+        // 3. CANVAS WAVEFORM VISUALIZER
+        // ==========================================
+        function resizeCanvas() {
+            const canvas = document.getElementById('visualizer-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            if (!isPlaying) drawIdleVisualizer();
+        }
+
+        function drawIdleVisualizer() {
+            const canvas = document.getElementById('visualizer-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const barCount = 48;
+            const gap = 4;
+            const barWidth = Math.max(2, (w - (barCount * gap)) / barCount);
+
+            for (let i = 0; i < barCount; i++) {
+                const x = i * (barWidth + gap) + gap;
+                const barH = 6 + Math.sin(i * 0.4) * 3;
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+                ctx.beginPath();
+                ctx.roundRect(x, (h - barH) / 2, barWidth, barH, 3);
+                ctx.fill();
+            }
+        }
+
+        function drawLiveVisualizer() {
+            const canvas = document.getElementById('visualizer-canvas');
+            if (!canvas || !analyserNode) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const bufferLength = analyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyserNode.getByteFrequencyData(dataArray);
+
+            ctx.clearRect(0, 0, w, h);
+
+            const barCount = 48;
+            const gap = 4;
+            const barWidth = Math.max(2, (w - (barCount * gap)) / barCount);
+
+            for (let i = 0; i < barCount; i++) {
+                const dataIdx = Math.floor((i / barCount) * (bufferLength * 0.7));
+                const value = dataArray[dataIdx] || 0;
+                const percent = value / 255;
+                const barH = Math.max(6, percent * (h * 0.8));
+                const x = i * (barWidth + gap) + gap;
+
+                const gradient = ctx.createLinearGradient(0, (h - barH) / 2, 0, (h + barH) / 2);
+                gradient.addColorStop(0, '#34d399');
+                gradient.addColorStop(1, '#059669');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.roundRect(x, (h - barH) / 2, barWidth, barH, 3);
+                ctx.fill();
+            }
+        }
+
+        // ==========================================
+        // 4. LECTURER ROLE & CLOUD UPLOAD MANAGEMENT
+        // ==========================================
+        function handleRoleButtonClick() {
+            if (isLecturer) {
+                document.getElementById('lecturer-panel').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                document.getElementById('login-modal').classList.remove('hidden');
+                document.getElementById('lecturer-pin-input').value = '';
+                document.getElementById('lecturer-pin-input').focus();
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        function verifyLecturerPin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('lecturer-pin-input').value.trim();
+            if (pin === LECTURER_PIN) {
+                isLecturer = true;
+                closeLoginModal();
+                updateRoleUI();
+                showToast("Berhasil masuk sebagai Dosen. Menu unggah aktif.", "success");
+            } else {
+                showToast("PIN Dosen tidak valid!", "error");
+            }
+        }
+
+        function logoutLecturer() {
+            isLecturer = false;
+            updateRoleUI();
+            const activeItem = materials.find(m => m.id === currentMaterialId);
+            if (activeItem && activeItem.status === 'draft') {
+                const firstPub = materials.find(m => m.status !== 'draft');
+                loadMaterialById(firstPub ? firstPub.id : null);
+            }
+            showToast("Anda keluar dari Mode Dosen.", "info");
+        }
+
+        function updateRoleUI() {
+            const badge = document.getElementById('role-badge');
+            const btnText = document.getElementById('role-btn-text');
+            const panel = document.getElementById('lecturer-panel');
+            const editBtn = document.getElementById('edit-instruction-btn');
+
+            if (isLecturer) {
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Mode Dosen`;
+                badge.className = "px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5";
+                btnText.textContent = "Panel Unggah";
+                panel.classList.remove('hidden');
+                editBtn.classList.remove('hidden');
+            } else {
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span> Mode Mahasiswa`;
+                badge.className = "px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5";
+                btnText.textContent = "Portal Dosen";
+                panel.classList.add('hidden');
+                editBtn.classList.add('hidden');
+            }
+            renderMaterialsList();
+            renderStudentSubmissions();
+        }
+
+        function updateFileName(input) {
+            const label = document.getElementById('file-label-text');
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const sizeKB = (file.size / 1024).toFixed(1);
+                label.innerHTML = `<span class="text-emerald-400 font-semibold">${file.name}</span> (${sizeKB} KB)`;
+            } else {
+                label.textContent = "Klik untuk memilih file rekaman suara dari perangkat Anda";
+            }
+        }
+
+        async function handleUploadSubmit(e) {
+            e.preventDefault();
+            await handleSaveOrPublish('published');
+        }
+
+        async function handleSaveOrPublish(statusMode) {
+            if (!isLecturer) {
+                showToast("Akses ditolak. Hanya dosen yang dapat mengelola materi.", "error");
+                return;
+            }
+            if (!db || !currentUser) {
+                showToast("Konfigurasi Firebase belum diisi pada kode index.html.", "warning");
+                return;
+            }
+
+            const title = document.getElementById('input-title').value.trim();
+            const lecturer = document.getElementById('input-lecturer').value.trim();
+            const instructions = document.getElementById('input-instructions').value.trim();
+            const fileInput = document.getElementById('input-audio-file');
+
+            if (!title || !lecturer || !instructions) {
+                showToast("Mohon lengkapi judul materi, nama dosen, dan instruksi.", "warning");
+                return;
+            }
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                showToast("Silakan pilih file audio terlebih dahulu.", "warning");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 750 * 1024) {
+                showToast("Ukuran file audio maksimal 750 KB agar dapat disinkronkan ke cloud.", "error");
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-upload-btn');
+            const draftBtn = document.getElementById('save-draft-btn');
+            submitBtn.disabled = true;
+            draftBtn.disabled = true;
+
+            if (statusMode === 'draft') {
+                draftBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Menyimpan Draf...</span>`;
+            } else {
+                submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Mengunggah ke Cloud...</span>`;
+            }
+            lucide.createIcons();
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+
+                initAudioContext();
+                const tempCopy = arrayBuffer.slice(0);
+                const decoded = await audioCtx.decodeAudioData(tempCopy);
+                const durationFormatted = formatTime(decoded.duration);
+                const audioBase64 = arrayBufferToBase64(arrayBuffer);
+
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'istima_materials');
+                const docRef = await addDoc(colRef, {
+                    title: title,
+                    lecturer: lecturer,
+                    durationText: durationFormatted,
+                    status: statusMode,
+                    audioBase64: audioBase64,
+                    instructions: instructions,
+                    createdAt: Date.now()
+                });
+
+                currentMaterialId = docRef.id;
+
+                document.getElementById('upload-form').reset();
+                document.getElementById('input-lecturer').value = lecturer;
+                document.getElementById('file-label-text').textContent = "Klik untuk memilih file rekaman suara dari perangkat Anda";
+
+                if (statusMode === 'draft') {
+                    showToast("Materi & tugas tersimpan di cloud sebagai Draf.", "info");
+                } else {
+                    showToast("Materi audio & tugas berhasil dipublikasikan ke cloud!", "success");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengunggah ke cloud. Pastikan ukuran file tidak melebihi batas.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                draftBtn.disabled = false;
+                draftBtn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>Simpan sebagai Draf</span>`;
+                submitBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i><span>Publikasikan Sekarang</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        async function publishDraftMaterial(matId, event) {
+            event.stopPropagation();
+            if (!isLecturer || !db || !currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'istima_materials', matId);
+                await updateDoc(docRef, { status: 'published' });
+                showToast("Materi draf berhasil dipublikasikan ke mahasiswa!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mempublikasikan materi.", "error");
+            }
+        }
+
+        function openEditInstructionModal() {
+            const current = materials.find(m => m.id === currentMaterialId);
+            if (!isLecturer || !current) {
+                showToast("Belum ada materi yang dipilih untuk diedit.", "warning");
+                return;
+            }
+            document.getElementById('edit-instruction-textarea').value = current.instructions;
+            document.getElementById('edit-instruction-modal').classList.remove('hidden');
+        }
+
+        function closeEditInstructionModal() {
+            document.getElementById('edit-instruction-modal').classList.add('hidden');
+        }
+
+        async function saveEditedInstruction() {
+            if (!isLecturer || !db || !currentUser || !currentMaterialId) return;
+            const updatedText = document.getElementById('edit-instruction-textarea').value.trim();
+            if (!updatedText) {
+                showToast("Instruksi tidak boleh kosong.", "warning");
+                return;
+            }
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'istima_materials', currentMaterialId);
+                await updateDoc(docRef, { instructions: updatedText });
+                closeEditInstructionModal();
+                showToast("Instruksi tugas berhasil diperbarui di cloud.", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal memperbarui instruksi.", "error");
+            }
+        }
+
+        async function deleteMaterial(matId, event) {
+            event.stopPropagation();
+            if (!isLecturer || !db || !currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'istima_materials', matId);
+                await deleteDoc(docRef);
+                if (currentMaterialId === matId) {
+                    currentMaterialId = null;
+                }
+                showToast("Materi berhasil dihapus dari cloud.", "info");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal menghapus materi.", "error");
+            }
+        }
+
+        // ==========================================
+        // 5. RENDER PLAYLIST & UTILITIES
+        // ==========================================
+        function renderMaterialsList() {
+            const container = document.getElementById('materials-list');
+            const visibleItems = materials.filter(item => isLecturer || item.status !== 'draft');
+
+            document.getElementById('material-count').textContent = `${visibleItems.length} Materi`;
+
+            if (visibleItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 px-4 border border-dashed border-slate-800 rounded-xl bg-slate-950/40">
+                        <i data-lucide="folder-open" class="w-7 h-7 text-slate-600 mx-auto mb-2"></i>
+                        <p class="text-xs font-medium text-slate-400">Belum ada materi tersedia</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Dosen dapat mengunggah audio melalui Portal Dosen.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = visibleItems.map((item) => {
+                const isActive = item.id === currentMaterialId;
+                const isDraft = item.status === 'draft';
+                return `
+                    <div onclick="loadMaterialById('${item.id}')" class="p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-2.5 ${
+                        isActive
+                            ? 'bg-emerald-950/50 border-emerald-500/50 shadow-sm'
+                            : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
+                    }">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                                isActive ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'
+                            }">
+                                <i data-lucide="${isActive ? 'volume-2' : 'headphones'}" class="w-4 h-4"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <h4 class="text-xs sm:text-sm font-medium ${isActive ? 'text-emerald-300' : 'text-slate-200'} truncate">
+                                        ${item.title}
+                                    </h4>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-400">
+                                    <span>${item.durationText || '00:00'}</span>
+                                    <span>•</span>
+                                    <span class="truncate">${item.lecturer}</span>
+                                    ${isLecturer ? (isDraft
+                                        ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-medium">Draf</span>`
+                                        : `<span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-medium">Terbit</span>`
+                                    ) : ''}
+                                </div>
+                            </div>
+                        </div>
+                        ${isLecturer ? `
+                            <div class="flex items-center gap-1 shrink-0">
+                                ${isDraft ? `
+                                    <button onclick="publishDraftMaterial('${item.id}', event)" title="Publikasikan Sekarang" class="p-1.5 rounded-lg text-emerald-400 hover:bg-emerald-500/15 transition-colors">
+                                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="deleteMaterial('${item.id}', event)" title="Hapus Materi" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 6. STUDENT CLOUD FILE SUBMISSION HANDLERS
+        // ==========================================
+        function updateStudentFileName(input) {
+            const label = document.getElementById('student-file-label');
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const sizeKB = (file.size / 1024).toFixed(1);
+                label.innerHTML = `<span class="text-emerald-400 font-semibold">${file.name}</span> (${sizeKB} KB)`;
+            } else {
+                label.textContent = "Pilih file jawaban (PDF, DOCX, JPG/PNG, MP3/M4A)";
+            }
+        }
+
+        function listenToMaterialSubmissions(matId) {
+            if (unsubscribeSubmissions) {
+                unsubscribeSubmissions();
+                unsubscribeSubmissions = null;
+            }
+            if (!db || !currentUser || !matId) {
+                currentSubmissions = [];
+                renderStudentSubmissions();
+                return;
+            }
+
+            const subColRef = collection(db, 'artifacts', appId, 'public', 'data', 'istima_submissions');
+            unsubscribeSubmissions = onSnapshot(subColRef, (snapshot) => {
+                const allSubs = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (data.materialId === matId) {
+                        allSubs.push({ id: docSnap.id, ...data });
+                    }
+                });
+                allSubs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                currentSubmissions = allSubs;
+                renderStudentSubmissions();
+            }, (error) => {
+                console.error("Submissions listener error:", error);
+            });
+        }
+
+        async function handleStudentSubmission(e) {
+            e.preventDefault();
+            if (!currentMaterialId) {
+                showToast("Belum ada materi aktif untuk pengumpulan tugas.", "warning");
+                return;
+            }
+            if (!db || !currentUser) {
+                showToast("Konfigurasi Firebase belum diisi pada kode index.html.", "warning");
+                return;
+            }
+
+            const nameInput = document.getElementById('student-name');
+            const nimInput = document.getElementById('student-nim');
+            const fileInput = document.getElementById('student-answer-file');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                showToast("Silakan pilih file jawaban tugas terlebih dahulu.", "warning");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 750 * 1024) {
+                showToast("Ukuran file jawaban maksimal 750 KB agar dapat tersimpan di cloud.", "error");
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Mengirim...</span>`;
+            lucide.createIcons();
+
+            try {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const sizeKB = `${(file.size / 1024).toFixed(1)} KB`;
+                const fileDataUrl = await fileToDataURL(file);
+
+                const subColRef = collection(db, 'artifacts', appId, 'public', 'data', 'istima_submissions');
+                await addDoc(subColRef, {
+                    materialId: currentMaterialId,
+                    studentName: nameInput.value.trim(),
+                    studentNim: nimInput.value.trim(),
+                    fileName: file.name,
+                    fileSize: sizeKB,
+                    submittedAt: timeStr,
+                    fileDataUrl: fileDataUrl,
+                    createdAt: Date.now()
+                });
+
+                fileInput.value = '';
+                document.getElementById('student-file-label').textContent = "Pilih file jawaban (PDF, DOCX, JPG/PNG, MP3/M4A)";
+                showToast("Jawaban tugas berhasil dikirim & tersimpan di cloud!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengirim file jawaban. Pastikan ukuran file di bawah 750 KB.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                lucide.createIcons();
+            }
+        }
+
+        function renderStudentSubmissions() {
+            const subs = currentSubmissions || [];
+            const badge = document.getElementById('submission-count-badge');
+            const wrapper = document.getElementById('student-submissions-wrapper');
+            const list = document.getElementById('student-submissions-list');
+
+            badge.textContent = `${subs.length} Terkumpul`;
+
+            if (subs.length === 0) {
+                wrapper.classList.add('hidden');
+                return;
+            }
+
+            wrapper.classList.remove('hidden');
+            list.innerHTML = subs.map((sub) => `
+                <div class="flex items-center justify-between gap-3 bg-slate-950/90 border border-slate-800 rounded-xl px-3.5 py-2.5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                            <i data-lucide="file-check" class="w-4 h-4"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-200 truncate">
+                                ${sub.studentName} <span class="text-slate-400 font-normal">(${sub.studentNim})</span>
+                            </p>
+                            <p class="text-[11px] text-slate-400 truncate">
+                                ${sub.fileName} • ${sub.fileSize} • Pukul ${sub.submittedAt}
+                            </p>
+                        </div>
+                    </div>
+                    ${isLecturer ? `
+                        <a href="${sub.fileDataUrl}" download="${sub.studentNim}_${sub.fileName}" title="Unduh Jawaban Mahasiswa"
+                            class="px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium flex items-center gap-1 shrink-0 transition-colors">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            Unduh
+                        </a>
+                    ` : `
+                        <span class="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-medium shrink-0">
+                            Terkirim
+                        </span>
+                    `}
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const colors = {
+                success: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',
+                error: 'bg-rose-950/95 border-rose-500/50 text-rose-200',
+                warning: 'bg-amber-950/95 border-amber-500/50 text-amber-200',
+                info: 'bg-slate-900/95 border-slate-700 text-slate-200'
+            };
+
+            toast.className = `px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-medium backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        window.handleRoleButtonClick = handleRoleButtonClick;
+        window.closeLoginModal = closeLoginModal;
+        window.verifyLecturerPin = verifyLecturerPin;
+        window.logoutLecturer = logoutLecturer;
+        window.updateFileName = updateFileName;
+        window.handleUploadSubmit = handleUploadSubmit;
+        window.handleSaveOrPublish = handleSaveOrPublish;
+        window.publishDraftMaterial = publishDraftMaterial;
+        window.openEditInstructionModal = openEditInstructionModal;
+        window.closeEditInstructionModal = closeEditInstructionModal;
+        window.saveEditedInstruction = saveEditedInstruction;
+        window.deleteMaterial = deleteMaterial;
+        window.loadMaterialById = loadMaterialById;
+        window.togglePlayPause = togglePlayPause;
+        window.stopAudio = stopAudio;
+        window.skipSeconds = skipSeconds;
+        window.seekAudio = seekAudio;
+        window.changeVolume = changeVolume;
+        window.cyclePlaybackRate = cyclePlaybackRate;
+        window.updateStudentFileName = updateStudentFileName;
+        window.handleStudentSubmission = handleStudentSubmission;
+
+        async function initCloudSync() {
+            if (!firebaseConfig) {
+                loadMaterialById(null);
+                return;
+            }
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = cred.user;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
+                }
+
+                if (!currentUser) return;
+
+                const matColRef = collection(db, 'artifacts', appId, 'public', 'data', 'istima_materials');
+                onSnapshot(matColRef, (snapshot) => {
+                    const loaded = [];
+                    snapshot.forEach((docSnap) => {
+                        loaded.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    loaded.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    materials = loaded;
+
+                    const visibleItems = materials.filter(item => isLecturer || item.status !== 'draft');
+                    const stillVisible = visibleItems.find(item => item.id === currentMaterialId);
+
+                    if (stillVisible) {
+                        document.getElementById('player-title').textContent = stillVisible.title;
+                        document.getElementById('player-lecturer').textContent = `Pengampu: ${stillVisible.lecturer}`;
+                        document.getElementById('instruction-content').textContent = stillVisible.instructions;
+                        renderMaterialsList();
+                    } else if (visibleItems.length > 0) {
+                        loadMaterialById(visibleItems[0].id);
+                    } else {
+                        loadMaterialById(null);
+                    }
+                }, (error) => {
+                    console.error("Materials sync error:", error);
+                    showToast("Gagal menyinkronkan daftar materi dari cloud.", "error");
+                });
+            } catch (err) {
+                console.error("Cloud init error:", err);
+                loadMaterialById(null);
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = function () {
+            lucide.createIcons();
+            resizeCanvas();
+            initCloudSync();
+        };
+    </script>
+</body>
+</html>
